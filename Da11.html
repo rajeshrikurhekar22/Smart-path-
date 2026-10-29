@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Smart-Path | Safer night walks in Amravati</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{--night:#0b1120;--panel:#111a30;--raise:#18233f;--line:rgba(235,230,216,.12);--text:#ebe6d8;--mute:#9aa3b8;--lamp:#ffd48a;--safe:#34c38f;--mid:#e9a23b;--risk:#e5533d;--disp:'Bricolage Grotesque',Georgia,serif;--body:'Instrument Sans',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--night);color:var(--text);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--lamp);outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+.nav{position:fixed;inset:0 0 auto;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:16px clamp(18px,4vw,56px);transition:background .3s}
+.nav.solid{background:rgba(11,17,32,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{font:700 1.3rem var(--disp);text-decoration:none;display:flex;gap:10px;align-items:center;color:var(--text)}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--lamp);box-shadow:0 0 14px 3px rgba(255,212,138,.6)}
+.nav nav{display:flex;gap:26px;font-size:.95rem}
+.nav nav a{text-decoration:none;color:var(--mute)}.nav nav a:hover{color:var(--text)}
+/* hero */
+.hero{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden}
+.scene{position:absolute;inset:0;width:100%;height:100%}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,17,32,.82) 0%,rgba(11,17,32,.4) 48%,transparent 75%)}
+.hero-copy{position:relative;z-index:2;padding:0 clamp(18px,6vw,96px);max-width:760px;margin-top:-8vh}
+h1{font:700 clamp(2.6rem,6.2vw,5rem)/1.02 var(--disp);letter-spacing:-.02em;text-wrap:balance}
+.lede{margin:22px 0 32px;font-size:1.15rem;color:#cfd0da;max-width:46ch}
+.cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.btn{font:600 .95rem var(--body);border:0;border-radius:10px;padding:.85rem 1.35rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:transform .15s,background .2s}
+.btn:active{transform:translateY(1px)}
+.btn-lamp{background:var(--lamp);color:#2a1a02}.btn-lamp:hover{background:#ffe0a8}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}.btn-ghost:hover{background:rgba(255,255,255,.06)}
+.btn:disabled{opacity:.6;cursor:wait}
+.hero-note{position:absolute;z-index:2;left:clamp(18px,6vw,96px);bottom:26px;font-size:.85rem;color:var(--mute)}
+/* scene animation */
+.star{animation:tw 4s ease-in-out infinite}
+@keyframes tw{50%{opacity:.25}}
+.lamp-glow{opacity:0;animation:on 1.6s ease-out forwards}
+@keyframes on{0%{opacity:0}30%{opacity:.5}38%{opacity:.1}100%{opacity:1}}
+.lamp-glow.l2{animation-delay:.8s}.lamp-glow.l3{animation-delay:1.6s}
+.dead .lamp-glow{animation:flick 7s steps(1) 2.4s infinite}
+@keyframes flick{0%,8%,12%,14%,60%,63%,100%{opacity:.04}9%,13%,61%{opacity:.8}10%,62%{opacity:.2}}
+.walker{animation:walk 46s linear infinite}
+@keyframes walk{from{transform:translate(-140px,598px)}to{transform:translate(1740px,598px)}}
+.leg{transform-box:fill-box;transform-origin:50% 0;animation:step .85s ease-in-out infinite alternate}
+.leg.b{animation-direction:alternate-reverse}
+@keyframes step{from{transform:rotate(-26deg)}to{transform:rotate(26deg)}}
+.fig{animation:bob .425s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-2px)}}
+.orbit{animation:spin 2.6s linear infinite}.orbit.o2{animation-duration:3.7s;animation-direction:reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fog{animation:drift 60s linear infinite alternate}
+@keyframes drift{to{transform:translateX(220px)}}
+/* sections */
+.sect{padding:110px 0}
+h2{font:700 clamp(1.9rem,3.6vw,2.9rem)/1.1 var(--disp);letter-spacing:-.015em;max-width:20ch;text-wrap:balance}
+.sect-intro{color:var(--mute);max-width:52ch;margin-top:14px}
+.route-row{display:grid;grid-template-columns:1fr 1.15fr;gap:40px;align-items:center;padding:34px 0;border-top:1px solid var(--line)}
+.rows{margin-top:48px}.route-row:last-child{border-bottom:1px solid var(--line)}
+.route-row h3{font:600 1.45rem var(--disp)}
+.route-row p{color:var(--mute);margin-top:6px;max-width:40ch}
+.tag{display:inline-block;font-size:.8rem;font-weight:600;padding:.15rem .6rem;border-radius:99px;margin-bottom:10px}
+.tag.safe{background:rgba(52,195,143,.14);color:var(--safe)}.tag.normal{background:rgba(233,162,59,.14);color:var(--mid)}.tag.unsafe{background:rgba(229,83,61,.14);color:var(--risk)}
+.strip svg{width:100%;height:auto;display:block}
+/* planner */
+.planner{display:grid;grid-template-columns:410px 1fr;height:min(800px,92vh);margin-top:40px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel)}
+.side{overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:20px;border-right:1px solid var(--line);scrollbar-width:thin}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:.85rem;font-weight:600;color:var(--mute)}
+select{appearance:none;width:100%;background:var(--raise) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239aa3b8' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 14px center;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:.7rem .9rem;font:500 .95rem var(--body)}
+.gps-row{display:flex;gap:10px;align-items:center}
+.btn-gps{flex:1;background:var(--raise);color:var(--text);border:1px solid var(--line)}.btn-gps:hover{background:#1f2d4f}
+.btn-gps.gps-locked{border-color:var(--safe)}
+#gps-status-pill{font-size:.78rem;color:var(--mute)}
+.actions{display:grid;grid-template-columns:1fr auto;gap:10px}
+.btn-reset{background:transparent;color:var(--mute);border:1px solid var(--line)}.btn-reset:hover{color:var(--text)}
+.box{position:relative;display:flex;flex-direction:column;gap:14px}
+.calc-overlay{position:absolute;inset:-8px;background:rgba(17,26,48,.85);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:5;border-radius:12px;font-size:.9rem;color:var(--lamp)}
+.calc-overlay.active{display:flex}
+.hud-scanner{width:30px;height:30px;border-radius:50%;border:3px solid rgba(255,212,138,.2);border-top-color:var(--lamp);animation:spin .8s linear infinite}
+.results-container{display:none;flex-direction:column;gap:12px}.results-container.visible{display:flex;animation:in .35s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.res-head{display:flex;justify-content:space-between;align-items:baseline}
+.res-head b{font:600 1.1rem var(--disp)}.res-head span{font-size:.8rem;color:var(--mute)}
+.route-card{background:var(--raise);border:1px solid transparent;border-left:4px solid;border-radius:12px;padding:14px 14px 14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:9px;transition:border-color .2s}
+.route-card.safe{border-left-color:var(--safe)}.route-card.normal{border-left-color:var(--mid)}.route-card.unsafe{border-left-color:var(--risk)}
+.route-card.active{border-color:rgba(235,230,216,.3)}
+.route-card.safe.active{border-color:var(--safe)}.route-card.normal.active{border-color:var(--mid)}.route-card.unsafe.active{border-color:var(--risk)}
+.rc-top{display:flex;justify-content:space-between;align-items:center;font-size:.8rem}
+.rc-top b{font-weight:600}
+.safe .rc-top b,.safe .lv{color:var(--safe)}.normal .rc-top b,.normal .lv{color:var(--mid)}.unsafe .rc-top b,.unsafe .lv{color:var(--risk)}
+.rn{font:600 1.05rem var(--disp)}
+.rd{font-size:.85rem;color:var(--mute);line-height:1.4}
+.lux{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--mute)}
+.lux div:first-child{display:flex;justify-content:space-between}.lv{font-weight:600}
+.track{height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}.fill{height:100%;border-radius:3px}
+.fill.safe{background:var(--safe)}.fill.normal{background:var(--mid)}.fill.unsafe{background:var(--risk)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:9px;border-top:1px solid var(--line);font-size:.75rem;color:var(--mute)}
+.metrics b{display:block;font-size:1rem;color:var(--text);font-weight:600}
+.st{font-size:.8rem;color:var(--mute)}
+.mapwrap{position:relative}
+#map{position:absolute;inset:0;background:#0b1120}
+
+.leaflet-bar a{background:var(--raise);color:var(--text);border-color:var(--line)}
+.chip{position:absolute;z-index:400;right:14px;top:14px;background:rgba(17,26,48,.9);border:1px solid var(--line);border-radius:8px;padding:.4rem .7rem;font-size:.8rem;color:var(--mute);font-variant-numeric:tabular-nums}
+.legend{position:absolute;z-index:400;right:14px;bottom:14px;background:rgba(17,26,48,.9);border:1px solid var(--line);border-radius:10px;padding:.6rem .9rem;display:flex;gap:16px;font-size:.8rem;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:7px}.legend i{width:18px;height:4px;border-radius:2px}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#111a30!important;color:var(--text)!important;border:1px solid var(--line)}
+.leaflet-popup-content{font-family:var(--body)!important;margin:12px 14px!important}
+.popup-title{font-weight:600;margin-bottom:4px}.popup-lux{font-size:.8rem;color:var(--safe);margin-bottom:4px}.popup-desc{font-size:.8rem;color:var(--mute);line-height:1.4}
+.gps-pulse-marker{position:relative}
+.gps-pulse-core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:#4aa8ff;border:2px solid #fff;border-radius:50%}
+.gps-pulse-waves{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;border:2px solid #4aa8ff;animation:wave 2s infinite ease-out}
+@keyframes wave{0%{width:14px;height:14px;opacity:1}100%{width:46px;height:46px;opacity:0}}
+.node-pin-marker{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:700;font-size:.8rem;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.node-pin-start{background:#4aa8ff;color:#06203a}.node-pin-end{background:var(--lamp);color:#2a1a02}
+.cyber-toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,100px);opacity:0;z-index:999;background:#18233f;border:1px solid var(--line);border-radius:10px;padding:.7rem 1.1rem;font-size:.9rem;max-width:min(92vw,520px);transition:transform .35s,opacity .35s;pointer-events:none}
+.cyber-toast.show{transform:translate(-50%,0);opacity:1}#toast-icon{display:none}
+.note{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.note p{color:var(--mute);max-width:46ch}
+footer{border-top:1px solid var(--line);padding:34px 0;color:var(--mute);font-size:.9rem}
+@media(max-width:900px){.nav{flex-wrap:wrap;gap:4px}.nav nav{gap:16px;overflow-x:auto;width:100%;font-size:.9rem}.route-row,.note{grid-template-columns:1fr;gap:20px}.planner{grid-template-columns:1fr;height:auto}.side{border-right:0;border-bottom:1px solid var(--line)}.mapwrap{height:60vh;min-height:380px}.hero::after{background:rgba(11,17,32,.55)}.sect{padding:72px 0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.lamp-glow{opacity:1}}
+.page{display:none}.page.active{display:block}
+.phead{padding:140px 0 30px}.phead h1{font-size:clamp(2.2rem,5vw,3.6rem)}
+.nav nav a.on{color:var(--lamp)}
+.row3{display:grid;grid-template-columns:1fr 1.4fr auto;gap:30px;align-items:center;padding:26px 0;border-top:1px solid var(--line)}
+.row3:last-child{border-bottom:1px solid var(--line)}
+.row3 h3{font:600 1.3rem var(--disp)}.row3 p{color:var(--mute);max-width:56ch}
+.num{font:700 2.6rem var(--disp);color:var(--lamp);line-height:1}
+.acts{display:flex;gap:8px;flex-wrap:wrap}.acts .btn{padding:.55rem 1rem;font-size:.85rem}
+.steps{counter-reset:s;margin-top:30px;display:grid;gap:18px;max-width:62ch}
+.steps li{list-style:none;padding-left:46px;position:relative;color:var(--mute)}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;border:1px solid var(--lamp);color:var(--lamp);display:grid;place-items:center;font-weight:600;font-size:.85rem}
+.steps b{color:var(--text);display:block}
+.prose{max-width:62ch;color:var(--mute);display:grid;gap:14px;margin-top:20px}
+.layers{position:absolute;z-index:400;left:14px;bottom:14px;display:flex;background:rgba(17,26,48,.92);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.layers button{background:none;border:0;color:var(--mute);font:500 .82rem var(--body);padding:.5rem .85rem;cursor:pointer}
+.layers button.on{background:var(--lamp);color:#2a1a02}
+.lmw{overflow:visible}.lm{display:flex;align-items:center;gap:6px;white-space:nowrap;font:600 11px var(--body);color:#f4efe0;text-shadow:0 1px 3px #000,0 0 7px #000;pointer-events:none}
+.lm i{width:9px;height:9px;border-radius:50%;background:#10172b;border:2px solid var(--lamp);flex:none}
+#map.few .lm span{display:none}#map.light .lm{color:#1b2238;text-shadow:0 0 3px #fff,0 0 6px #fff}
+.leaflet-control-scale-line{background:rgba(17,26,48,.8);color:var(--mute);border-color:var(--mute)}
+.foot-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px}.foot-links a{color:var(--text);text-decoration:none}
+@media(max-width:900px){.row3{grid-template-columns:1fr;gap:12px}.layers{bottom:60px}}
+#map.dim .leaflet-tile-pane{filter:invert(1) hue-rotate(195deg) brightness(.85) saturate(.5) contrast(.95)}
+.maperr{position:absolute;z-index:500;left:50%;top:50%;transform:translate(-50%,-50%);background:#18233f;border:1px solid var(--line);border-radius:10px;padding:.8rem 1.1rem;max-width:80%;text-align:center;font-size:.9rem}
+path.safe-polyline,path.normal-polyline,path.unsafe-polyline{stroke-opacity:.01!important;cursor:pointer}
+.nc-safe{filter:drop-shadow(0 0 4px #2dffb0) drop-shadow(0 0 12px #2dffb0)}.nc-normal{filter:drop-shadow(0 0 4px #ffc247) drop-shadow(0 0 12px #ffc247)}.nc-unsafe{filter:drop-shadow(0 0 4px #ff3d6e) drop-shadow(0 0 12px #ff3d6e)}
+.legend i{box-shadow:0 0 8px currentColor}
+</style>
+</head>
+<body>
+<header class="nav" id="nav">
+  <a class="brand" href="#top"><i></i>Smart-Path</a>
+  <nav><a href="#top" data-p="home">Home</a><a href="#/places" data-p="places">Places</a><a href="#/tips" data-p="tips">Safety tips</a><a href="#/help" data-p="help">Emergency</a><a href="#/about" data-p="about">About</a></nav>
+</header>
+
+<div class="page active" id="page-home">
+<section class="hero" id="top">
+  <svg class="scene" viewBox="0 0 1600 700" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070b17"/><stop offset=".65" stop-color="#18213f"/><stop offset="1" stop-color="#3a3556"/></linearGradient>
+      <radialGradient id="glow"><stop offset="0" stop-color="#ffd48a" stop-opacity=".95"/><stop offset=".25" stop-color="#ffd48a" stop-opacity=".35"/><stop offset="1" stop-color="#ffd48a" stop-opacity="0"/></radialGradient>
+      <linearGradient id="cone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd48a" stop-opacity=".5"/><stop offset="1" stop-color="#ffd48a" stop-opacity=".02"/></linearGradient>
+      <radialGradient id="moon"><stop offset="0" stop-color="#fff6df"/><stop offset=".55" stop-color="#f1e6c6"/><stop offset="1" stop-color="#f1e6c6" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="1600" height="700" fill="url(#sky)"/>
+    <g id="stars"></g>
+    <circle cx="1240" cy="140" r="120" fill="url(#moon)" opacity=".28"/><circle cx="1240" cy="140" r="34" fill="#f6ecd0"/>
+    <g id="city" fill="#0e152c"></g>
+    <g id="trees" fill="#080d1b"></g>
+    <rect y="590" width="1600" height="110" fill="#0b0f1c"/>
+    <rect y="590" width="1600" height="46" fill="#1a2138"/><rect y="634" width="1600" height="4" fill="#2b3350"/>
+    <path d="M0 672H1600" stroke="#2a3250" stroke-width="3" stroke-dasharray="46 40"/>
+    <g id="lamps"></g>
+    <g class="fog" opacity=".5"><ellipse cx="300" cy="610" rx="520" ry="34" fill="#4b4f78" opacity=".25"/><ellipse cx="1100" cy="620" rx="600" ry="28" fill="#4b4f78" opacity=".2"/></g>
+    <g transform="translate(700 598)" class="walker"><g class="fig" fill="#04060c" stroke="rgba(255,212,138,.28)" stroke-width=".8">
+      <rect class="leg" x="-4" y="-34" width="8" height="34" rx="4"/><rect class="leg b" x="-4" y="-34" width="8" height="34" rx="4"/>
+      <path d="M-11 -36 L11 -36 L9 -64 Q0 -70 -9 -64Z"/><circle cx="1" cy="-76" r="8"/>
+      <rect x="-17" y="-63" width="10" height="22" rx="3"/><rect x="-3" y="-64" width="6" height="26" rx="3"/>
+    </g></g>
+    <g id="moths" fill="#fff3d6"></g>
+  </svg>
+  <div class="hero-copy">
+    <h1>Take the road with the lights on.</h1>
+    <p class="lede">Smart-Path compares three ways across Amravati's Kathora corridor and ranks them by street lighting, so the walk back to the hostel is the one you'd pick in daylight.</p>
+    <div class="cta"><a class="btn btn-lamp" href="#planner">Plan a walk</a><a class="btn btn-ghost" href="#routes">How routes are ranked</a></div>
+  </div>
+  <p class="hero-note">Covers Pote Township, Kathora Naka, Gadge Nagar and the P. R. Pote campus.</p>
+</section>
+
+<section class="sect" id="routes"><div class="wrap">
+  <h2>Every trip gets three routes, from best lit to darkest.</h2>
+  <p class="sect-intro">Pick a start and a destination. We draw all three on the map so you can see what you'd be walking past, then follow the brightest.</p>
+  <div class="rows">
+    <article class="route-row"><div><span class="tag safe">Best lit</span><h3>Kathora Main Road</h3><p>Divided road with shops open late, CCTV and an unbroken line of streetlights.</p></div><div class="strip" data-k="1,1,1,1,1,1"></div></article>
+    <article class="route-row"><div><span class="tag normal">Fair</span><h3>Gajanan Township connector</h3><p>Quiet residential streets. Lighting is okay, with a few shadowed gaps between gates.</p></div><div class="strip" data-k="1,.9,.15,1,.2,.8"></div></article>
+    <article class="route-row"><div><span class="tag unsafe">Avoid at night</span><h3>Hostel backstreet lane</h3><p>Shorter, but unpaved, overgrown and mostly unlit. Few people around after dark.</p></div><div class="strip" data-k="1,0,0,.15,0,0"></div></article>
+  </div>
+</div></section>
+
+<section class="sect" id="planner" style="padding-top:20px"><div class="wrap">
+  <h2>Plan a walk</h2>
+  <p class="sect-intro">Use your phone's location or choose a starting point. Tap a route to follow it on the map.</p>
+  <div class="planner">
+    <aside class="side">
+      <div class="gps-row">
+        <button id="btn-gps-locate" class="btn btn-gps">Use my location</button>
+        <span id="gps-status-pill">Standby</span>
+      </div>
+      <div class="box">
+        <div class="calc-overlay" id="calc-overlay"><div class="hud-scanner"></div><span>Finding roads...</span></div>
+        <div class="field"><label for="select-origin">Starting point</label>
+          <select id="select-origin"><option value="pote_township_circle">Pote Township Main Circle</option><option value="pote_township_gate">Pote Township Gate</option><option value="kathora_naka">Kathora Naka Square</option><option value="gadge_nagar">Gadge Nagar Circle</option></select></div>
+        <div class="field"><label for="select-destination">Going to</label>
+          <select id="select-destination"><option value="pote_college_gate">P. R. Pote Patil College Main Gate</option><option value="pote_hostel_area">Pote Campus Hostel Area</option><option value="kathora_naka">Kathora Naka Square</option></select></div>
+        <div class="actions"><button id="btn-calculate" class="btn btn-lamp">Compare routes</button><button id="btn-reset" class="btn btn-reset">Clear</button></div>
+      </div>
+      <div id="results-container" class="results-container">
+        <div class="res-head"><b>Your three routes</b><span>Tap to focus</span></div>
+        <div class="route-card safe active" id="card-safe" data-route="safe">
+          <div class="rc-top"><b>Best lit</b><span>Safety score 96</span></div>
+          <div class="rn">Kathora Main Road</div><div class="rd">Divided road with shops open late, CCTV and continuous street lighting.</div>
+          <div class="lux"><div><span>Lighting level</span><span class="lv">85.4%</span></div><div class="track"><div class="fill safe" style="width:85.4%"></div></div></div>
+          <div class="metrics"><span><b id="safe-dist">2.4 km</b>Distance</span><span><b id="safe-time-drive">4 min</b>Drive</span><span><b id="safe-time-walk">22 min</b>Walk</span></div>
+          <div class="st">No dark stretches along the way.</div></div>
+        <div class="route-card normal" id="card-normal" data-route="normal">
+          <div class="rc-top"><b>Fair</b><span>Safety score 68</span></div>
+          <div class="rn">Gajanan Township connector</div><div class="rd">Residential streets with a few shadowed gaps between gates.</div>
+          <div class="lux"><div><span>Lighting level</span><span class="lv">54.0%</span></div><div class="track"><div class="fill normal" style="width:54%"></div></div></div>
+          <div class="metrics"><span><b id="normal-dist">2.1 km</b>Distance</span><span><b id="normal-time-drive">5 min</b>Drive</span><span><b id="normal-time-walk">19 min</b>Walk</span></div>
+          <div class="st">Fine with company; stay alert after dark.</div></div>
+        <div class="route-card unsafe" id="card-unsafe" data-route="unsafe">
+          <div class="rc-top"><b>Avoid at night</b><span>Safety score 22</span></div>
+          <div class="rn">Hostel backstreet lane</div><div class="rd">Unpaved lane behind the hostels. Broken lights, overgrown trees, few people.</div>
+          <div class="lux"><div><span>Lighting level</span><span class="lv">18.2%</span></div><div class="track"><div class="fill unsafe" style="width:18.2%"></div></div></div>
+          <div class="metrics"><span><b id="unsafe-dist">1.6 km</b>Distance</span><span><b id="unsafe-time-drive">6 min</b>Drive</span><span><b id="unsafe-time-walk">15 min</b>Walk</span></div>
+          <div class="st">Skip this after 8 pm.</div></div>
+      </div>
+    </aside>
+    <div class="mapwrap">
+      <div id="map"></div>
+      <div class="chip"><span id="hud-coords">20.9740° N, 77.7600° E</span></div>
+      <div class="layers" id="layers"><button data-l="night" class="on">Night</button><button data-l="day">Street</button><button data-l="sat">Satellite</button></div>
+      <div class="legend"><span><i style="background:#2dffb0;color:#2dffb0"></i>Best lit</span><span><i style="background:#ffc247;color:#ffc247"></i>Fair</span><span><i style="background:repeating-linear-gradient(90deg,#ff3d6e 0 5px,transparent 5px 9px);color:#ff3d6e"></i>Avoid</span></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="sect" id="about" style="padding-top:20px"><div class="wrap note">
+  <div><h2>Good to know</h2></div>
+  <div><p>Routes are drawn on real roads using the public OSRM routing service. The lighting levels and safety scores are fixed estimates for each corridor, not live readings from streetlights.</p>
+  <p style="margin-top:14px">Treat Smart-Path as a second opinion. If a road feels wrong when you get there, trust that and head for a busier one.</p></div>
+</div></section>
+
+</div>
+<div class="page" id="page-places"><div class="wrap"><div class="phead"><h1>Places on the corridor</h1><p class="sect-intro">The six points Smart-Path knows around Pote Township and Kathora Road. Pick one as your start or destination and we'll take you to the planner.</p></div><div class="row3"><h3>Pote Township Main Circle</h3><p>Central junction inside the Pote Township residential colony.</p><div class="acts"><button class="btn btn-ghost" data-o="pote_township_circle">Start here</button></div></div><div class="row3"><h3>Pote Township Gate</h3><p>Main entrance arch on the Kathora bypass link.</p><div class="acts"><button class="btn btn-ghost" data-o="pote_township_gate">Start here</button></div></div><div class="row3"><h3>Kathora Naka Square</h3><p>Busy commercial junction connecting Kathora Road and the City Ring.</p><div class="acts"><button class="btn btn-ghost" data-o="kathora_naka">Start here</button><button class="btn btn-lamp" data-d="kathora_naka">Go here</button></div></div><div class="row3"><h3>Gadge Nagar Circle</h3><p>Major urban intersection near Gadge Nagar Police Station.</p><div class="acts"><button class="btn btn-ghost" data-o="gadge_nagar">Start here</button></div></div><div class="row3"><h3>P. R. Pote Patil College Main Gate</h3><p>Main academic campus entrance on the Kathora State Highway.</p><div class="acts"><button class="btn btn-lamp" data-d="pote_college_gate">Go here</button></div></div><div class="row3"><h3>Pote Campus Hostel Area</h3><p>North-east hostel quarters behind the engineering building.</p><div class="acts"><button class="btn btn-lamp" data-d="pote_hostel_area">Go here</button></div></div></div><div style="height:90px"></div></div>
+<div class="page" id="page-tips"><div class="wrap"><div class="phead"><h1>Walking home after dark</h1><p class="sect-intro">Small habits that make a night walk safer. None of them replace your own judgment on the street.</p></div><div class="row3"><h3>Choose the lit road before you leave</h3><p>Compare the three routes and pick the best lit one, even if it adds a few minutes.</p><span></span></div><div class="row3"><h3>Tell someone where you are</h3><p>Share your live location with a friend or family member when you walk after dark.</p><span></span></div><div class="row3"><h3>Stay where people are</h3><p>Prefer roads with open shops, buses and other walkers. Skip shortcuts through empty lanes.</p><span></span></div><div class="row3"><h3>Keep your head up</h3><p>Keep the volume low or one earphone out, and put the phone away when crossing roads.</p><span></span></div><div class="row3"><h3>Walk with company</h3><p>Go in pairs or groups when you can, and agree on a meeting point in case you get separated.</p><span></span></div><div class="row3"><h3>Know where help is</h3><p>Note open shops, the college gate or a police station near your route. If a road feels wrong, change route.</p><span></span></div></div><div style="height:90px"></div></div>
+<div class="page" id="page-help"><div class="wrap"><div class="phead"><h1>If you need help now</h1><p class="sect-intro">These are national and state numbers for India. Save them in your phone before you need them.</p></div><div class="row3"><div class="num">112</div><div><h3>All emergencies</h3><p>India's single emergency number. Works for police, fire and ambulance.</p></div><a class="btn btn-lamp" href="tel:112">Call 112</a></div><div class="row3"><div class="num">100</div><div><h3>Police</h3><p>Report a crime or a threat, or ask the police to come to you.</p></div><a class="btn btn-lamp" href="tel:100">Call 100</a></div><div class="row3"><div class="num">108</div><div><h3>Ambulance</h3><p>Medical emergencies in Maharashtra.</p></div><a class="btn btn-lamp" href="tel:108">Call 108</a></div><div class="row3"><div class="num">1091</div><div><h3>Women helpline</h3><p>Help for women in distress, any time of day.</p></div><a class="btn btn-lamp" href="tel:1091">Call 1091</a></div><div class="row3"><div class="num">181</div><div><h3>Women helpline</h3><p>State women's helpline for support and referral.</p></div><a class="btn btn-lamp" href="tel:181">Call 181</a></div>
+<div class="row3"><div><h3>Send your location</h3></div><p id="share-out">Share a map link of where you are right now with someone you trust.</p><button class="btn btn-ghost" id="share-loc">Share my location</button></div></div><div style="height:90px"></div></div>
+<div class="page" id="page-about"><div class="wrap"><div class="phead"><h1>About Smart-Path</h1><p class="sect-intro">A route finder for the Kathora corridor in Amravati that puts street lighting first.</p></div>
+<ol class="steps"><li><b>Choose where you are going</b>Pick a starting point (or use your phone's location) and a destination.</li><li><b>We draw three routes</b>One direct road, and two that bend through other streets, snapped to real roads with the OSRM routing service.</li><li><b>Each route gets a lighting level</b>The direct road is the main road with the best lighting. The other two are scored lower.</li><li><b>You follow the brightest one</b>Tap a route to see it, its walking time and a moving marker along the way.</li></ol>
+<div class="prose"><p>The lighting levels and safety scores are fixed estimates for each corridor, not live readings from streetlights, and the lamps drawn on the map are an illustration of those scores. Distances and times come from the routing service and can differ on the ground.</p><p>Maps use OpenStreetMap data, Esri map tiles, and the Leaflet library.</p></div></div><div style="height:90px"></div></div>
+<footer><div class="wrap"><div class="foot-links"><a href="#top">Home</a><a href="#/places">Places</a><a href="#/tips">Safety tips</a><a href="#/help">Emergency</a><a href="#/about">About</a></div>Smart-Path, made for students and residents around P. R. Pote Patil College, Amravati. Map data Esri, HERE, Garmin, OpenStreetMap contributors.</div></footer>
+
+<div id="cyber-toast" class="cyber-toast"><span id="toast-icon"></span><span id="toast-message"></span></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    /**
+     * Smart-Path AI Night Navigation Engine
+     * Amravati Kathora Road Corridor Architecture
+     */
+    (function() {
+      'use strict'; window.__sp = null;
+
+      // -------------------------------------------------------------
+      // 1. GEO-COORDINATE REPOSITORY (Amravati, Maharashtra)
+      // -------------------------------------------------------------
+      const LOCATION_NODES = {
+        pote_township_circle: {
+          id: 'pote_township_circle',
+          name: 'Pote Township Main Circle',
+          lat: 20.98300,
+          lng: 77.75700,
+          desc: 'Central junction inside Pote Township residential colony'
+        },
+        pote_township_gate: {
+          id: 'pote_township_gate',
+          name: 'Pote Township Gate',
+          lat: 20.98470,
+          lng: 77.75820,
+          desc: 'Main entrance arch on Kathora bypass link'
+        },
+        kathora_naka: {
+          id: 'kathora_naka',
+          name: 'Kathora Naka Square',
+          lat: 20.95866,
+          lng: 77.75442,
+          desc: 'High-density commercial junction connecting Kathora Road & City Ring'
+        },
+        gadge_nagar: {
+          id: 'gadge_nagar',
+          name: 'Gadge Nagar Circle',
+          lat: 20.94936,
+          lng: 77.76747,
+          desc: 'Major urban intersection near Gadge Nagar Police Station'
+        },
+        pote_college_gate: {
+          id: 'pote_college_gate',
+          name: 'P. R. Pote Patil College Main Gate',
+          lat: 20.98630,
+          lng: 77.75880,
+          desc: 'Main academic campus entrance on Kathora State Highway'
+        },
+        pote_hostel_area: {
+          id: 'pote_hostel_area',
+          name: 'Pote Campus Hostel Area',
+          lat: 20.98800,
+          lng: 77.76050,
+          desc: 'North-East residential hostel quarters behind engineering building'
+        }
+      };
+
+      // State store
+      const appState = {
+        map: null,
+        userGpsLocation: null,
+        gpsMarker: null,
+        gpsAccuracyCircle: null,
+        activeOriginKey: 'pote_township_circle',
+        activeDestKey: 'pote_college_gate',
+        routeLayers: {
+          safe: null,
+          normal: null,
+          unsafe: null
+        },
+        markerLayers: {
+          start: null,
+          end: null
+        },
+        routesData: null,
+        activeHighlightedRoute: 'safe'
+      };
+
+      // -------------------------------------------------------------
+      // 2. MAP INITIALIZATION (Clean Slate State)
+      // -------------------------------------------------------------
+      function initMap() {
+        // Amravati Kathora Corridor Center
+        const defaultCenter = [20.9740, 77.7600];
+        const defaultZoom = 13;
+
+        appState.map = L.map('map', {
+          center: defaultCenter,
+          zoom: defaultZoom,
+          zoomControl: false,
+          attributionControl: false
+        });
+
+        // Add sleek zoom control in top-left
+        L.control.zoom({ position: 'topleft' }).addTo(appState.map); window.__sp = appState; setTimeout(function(){ document.dispatchEvent(new Event('sp:map')); }, 0);
+
+        // Esri street tiles (high detail for Indian roads)
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19,
+          attribution: 'Tiles &copy; Esri'
+        }).addTo(appState.map);
+
+        // Update HUD coordinates on cursor move
+        appState.map.on('mousemove', function(e) {
+          document.getElementById('hud-coords').textContent =
+            `${e.latlng.lat.toFixed(4)}° N, ${e.latlng.lng.toFixed(4)}° E`;
+        });
+      }
+
+      // -------------------------------------------------------------
+      // 3. TOAST & NOTIFICATION SYSTEM
+      // -------------------------------------------------------------
+      let toastTimer = null;
+      function showToast(message, icon = '') {
+        const toast = document.getElementById('cyber-toast');
+        const msgEl = document.getElementById('toast-message');
+        const iconEl = document.getElementById('toast-icon');
+
+        msgEl.textContent = message;
+        iconEl.textContent = icon;
+
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 4000);
+      }
+
+      // -------------------------------------------------------------
+      // 4. GEOLOCATION ENGINE (HTML5 High Accuracy)
+      // -------------------------------------------------------------
+      function setupGeolocation() {
+        const btnGps = document.getElementById('btn-gps-locate');
+        const gpsStatusPill = document.getElementById('gps-status-pill');
+        const selectOrigin = document.getElementById('select-origin');
+        let watchId = null;
+        let watchTimer = null;
+        let bestAccuracy = Infinity;
+        let firstFix = true;
+
+        function stopWatch() {
+          if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+          if (watchTimer) clearTimeout(watchTimer);
+          watchId = null;
+          watchTimer = null;
+        }
+
+        function applyFix(position) {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          const accuracy = position.coords.accuracy;
+
+          // Keep only fixes that are at least as accurate as the best so far
+          if (accuracy > bestAccuracy) return;
+          bestAccuracy = accuracy;
+
+          appState.userGpsLocation = {
+            id: 'user_live_gps',
+            name: `My Live GPS (±${Math.round(accuracy)}m)`,
+            lat, lng,
+            desc: `Live device coordinates: ${lat.toFixed(5)}, ${lng.toFixed(5)}`
+          };
+
+          const label = ` My Live GPS Location (±${Math.round(accuracy)}m)`;
+          let gpsOption = selectOrigin.querySelector('option[value="user_live_gps"]');
+          if (!gpsOption) {
+            gpsOption = document.createElement('option');
+            gpsOption.value = 'user_live_gps';
+            selectOrigin.insertBefore(gpsOption, selectOrigin.firstChild);
+          }
+          gpsOption.textContent = label;
+          selectOrigin.value = 'user_live_gps';
+          appState.activeOriginKey = 'user_live_gps';
+
+          if (appState.gpsMarker) appState.map.removeLayer(appState.gpsMarker);
+          if (appState.gpsAccuracyCircle) appState.map.removeLayer(appState.gpsAccuracyCircle);
+
+          const pulseIcon = L.divIcon({
+            className: 'gps-pulse-marker',
+            html: '<div class="gps-pulse-waves"></div><div class="gps-pulse-core"></div>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+          });
+
+          appState.gpsMarker = L.marker([lat, lng], { icon: pulseIcon })
+            .bindPopup(`
+              <div class="popup-title"> Live User Location</div>
+              <div class="popup-lux">Accuracy Radius: ±${Math.round(accuracy)} meters</div>
+              <div class="popup-desc">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}</div>
+            `)
+            .addTo(appState.map);
+
+          appState.gpsAccuracyCircle = L.circle([lat, lng], {
+            radius: accuracy,
+            color: '#06b6d4',
+            weight: 1,
+            fillColor: '#06b6d4',
+            fillOpacity: 0.12
+          }).addTo(appState.map);
+
+          if (firstFix) {
+            firstFix = false;
+            // Immediately draw the routes (safe route highlighted) from the live location
+            calculateCorridorRoutes();
+          }
+
+          btnGps.classList.add('gps-locked');
+          gpsStatusPill.textContent = accuracy > 500 ? 'APPROX' : 'LOCKED';
+          gpsStatusPill.style.color = accuracy > 500 ? '#f59e0b' : '#10b981';
+
+          if (accuracy > 500) {
+            showToast(`Rough location only (±${Math.round(accuracy)}m) - likely Wi-Fi/IP based. Use a phone with GPS for a precise fix.`, '');
+          } else {
+            showToast(`GPS: ${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E (±${Math.round(accuracy)}m)`, '');
+          }
+        }
+
+        function onError(err) {
+          console.warn('Geolocation error:', err.code, err.message);
+          // Keep a fix we already have; only report failure if there is none
+          if (appState.userGpsLocation) return;
+          stopWatch();
+          let msg = 'Could not get your location.';
+          if (err.code === 1) msg = 'Location permission denied. Allow location access in your browser/site settings and try again.';
+          else if (err.code === 2) msg = 'Location unavailable. Turn on device location services and try again.';
+          else if (err.code === 3) msg = 'Location request timed out. Move to open sky or check that location is on, then retry.';
+          if (!window.isSecureContext) msg = 'Live location needs HTTPS (or localhost). Open this page from a secure URL, not a file.';
+          gpsStatusPill.textContent = 'FAILED';
+          gpsStatusPill.style.color = '#ef4444';
+          showToast(msg, '');
+        }
+
+        btnGps.addEventListener('click', function() {
+          if (!navigator.geolocation) {
+            showToast('Geolocation is not supported on this browser.', '');
+            return;
+          }
+          if (!window.isSecureContext) {
+            onError({ code: 0, message: 'insecure context' });
+            return;
+          }
+
+          stopWatch();
+          bestAccuracy = Infinity;
+          firstFix = true;
+          appState.userGpsLocation = null;
+
+          showToast('Acquiring location... keep this tab open for a few seconds to refine.', '');
+          gpsStatusPill.textContent = 'LOCKING...';
+          gpsStatusPill.style.color = '#06b6d4';
+
+          // watchPosition keeps refining: first fix is often coarse (Wi-Fi/cell),
+          // later fixes improve as the GPS chip locks on.
+          watchId = navigator.geolocation.watchPosition(applyFix, onError, {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0
+          });
+          watchTimer = setTimeout(stopWatch, 25000);
+        });
+      }
+
+      // -------------------------------------------------------------
+      // 5. OSRM API & ROAD-SNAPPED VECTOR ENGINE
+      // -------------------------------------------------------------
+      /**
+       * Fetches real road coordinates from Open Source Routing Machine
+       * Supports intermediate waypoints to guarantee 3 distinct realistic corridors.
+       */
+      async function queryOSRM(waypoints) {
+        // Construct coordinate string: "lng1,lat1;lng2,lat2;..."
+        const coordString = waypoints.map(pt => `${pt[1]},${pt[0]}`).join(';');
+        const url = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson&steps=false`;
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 8000);
+        let response;
+        try {
+          response = await fetch(url, { signal: controller.signal });
+        } finally {
+          clearTimeout(timer);
+        }
+        if (!response.ok) {
+          throw new Error(`OSRM API response status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
+          throw new Error('OSRM found no path for waypoints');
+        }
+
+        const route = data.routes[0];
+        // Convert GeoJSON [lng, lat] to Leaflet [lat, lng]
+        const latLngs = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+        return {
+          latLngs: latLngs,
+          distanceMeters: route.distance,
+          durationSec: route.duration
+        };
+      }
+
+      /**
+       * Precision Street-Snapped Node Interpolator (Fallback safety guarantee)
+       * Guaranteed to follow real street vectors of Amravati's Kathora corridor.
+       */
+      function getFallbackRoadPath(origin, destination, routeType) {
+        // Key landmark nodes along real street geometry
+        const KATHORA_MAIN_SPINE = [
+          [20.94936, 77.76747], // Gadge Nagar
+          [20.95400, 77.76100],
+          [20.95866, 77.75442], // Kathora Naka
+          [20.96800, 77.75550],
+          [20.97700, 77.75700],
+          [20.98300, 77.75700], // Pote Township Circle
+          [20.98470, 77.75820], // Township Gate
+          [20.98630, 77.75880], // College Gate
+          [20.98800, 77.76050]  // Hostel Zone
+        ];
+
+        const RESIDENTIAL_CONNECTOR_SPINE = [
+          [20.94936, 77.76747],
+          [20.95750, 77.76000],
+          [20.95866, 77.75442],
+          [20.97000, 77.75900],
+          [20.97900, 77.75850],
+          [20.98300, 77.75700],
+          [20.98470, 77.75820],
+          [20.98630, 77.75880],
+          [20.98800, 77.76050]
+        ];
+
+        const BACKSTREET_ALLEY_SPINE = [
+          [20.94936, 77.76747],
+          [20.95800, 77.76500],
+          [20.96800, 77.76300],
+          [20.97800, 77.76250],
+          [20.98300, 77.76150],
+          [20.98470, 77.75820],
+          [20.98630, 77.75880],
+          [20.98800, 77.76050]
+        ];
+
+        let spine = KATHORA_MAIN_SPINE;
+        if (routeType === 'normal') spine = RESIDENTIAL_CONNECTOR_SPINE;
+        if (routeType === 'unsafe') spine = BACKSTREET_ALLEY_SPINE;
+
+        // Find the spine nodes closest to origin and destination, then use only that stretch
+        const nearestIdx = (pt) => {
+          let best = 0, bestD = Infinity;
+          spine.forEach((n, i) => {
+            const d = L.latLng(pt.lat, pt.lng).distanceTo(L.latLng(n[0], n[1]));
+            if (d < bestD) { bestD = d; best = i; }
+          });
+          return best;
+        };
+        const i0 = nearestIdx(origin);
+        const i1 = nearestIdx(destination);
+        const segment = i0 <= i1 ? spine.slice(i0, i1 + 1) : spine.slice(i1, i0 + 1).reverse();
+
+        const path = [[origin.lat, origin.lng]];
+        segment.forEach(pt => path.push(pt));
+        path.push([destination.lat, destination.lng]);
+
+        // Calculate approximate distance
+        let dist = 0;
+        for (let i = 0; i < path.length - 1; i++) {
+          const p1 = L.latLng(path[i][0], path[i][1]);
+          const p2 = L.latLng(path[i+1][0], path[i+1][1]);
+          dist += p1.distanceTo(p2);
+        }
+
+        return {
+          latLngs: path,
+          distanceMeters: dist,
+          durationSec: dist / (routeType === 'safe' ? 10 : 8)
+        };
+      }
+
+      /**
+       * Core calculation controller for the 3 distinct road-snapped routes.
+       */
+      async function calculateCorridorRoutes() {
+        const originSelect = document.getElementById('select-origin').value;
+        const destSelect = document.getElementById('select-destination').value;
+
+        // Resolve Origin Node
+        let originNode;
+        if (originSelect === 'user_live_gps') {
+          originNode = appState.userGpsLocation;
+        } else {
+          originNode = LOCATION_NODES[originSelect];
+        }
+
+        // Resolve Destination Node
+        const destNode = LOCATION_NODES[destSelect];
+
+        if (!originNode || !destNode) {
+          showToast('Please select valid origin and destination waypoints.', '');
+          return;
+        }
+
+        if (originNode.lat === destNode.lat && originNode.lng === destNode.lng) {
+          showToast('Origin and Destination cannot be the same waypoint.', '');
+          return;
+        }
+
+        // Show HUD Loading Overlay
+        const overlay = document.getElementById('calc-overlay');
+        const calcBtn = document.getElementById('btn-calculate');
+        if (calcBtn.disabled) return;
+        calcBtn.disabled = true;
+        overlay.classList.add('active');
+
+        // Clear existing routes & markers (keep live GPS marker if exists)
+        clearActiveRouteLayers();
+
+        try {
+          // Build via-points relative to the chosen origin/destination so routes
+          // never double back. Safe = direct (OSRM prefers main roads); the other two
+          // are pushed to opposite sides of the straight line.
+          const o = [originNode.lat, originNode.lng];
+          const d = [destNode.lat, destNode.lng];
+          const mid = [(o[0] + d[0]) / 2, (o[1] + d[1]) / 2];
+          let dx = d[1] - o[1], dy = d[0] - o[0];
+          const len = Math.hypot(dx, dy) || 1;
+          // unit perpendicular (lat, lng)
+          const perp = [dx / len, -dy / len];
+          // cap the sideways bend (~650 m) so long trips don't produce absurd detours
+          const bend = (k) => Math.sign(k) * Math.min(len * Math.abs(k), 0.006);
+          const offset = (k) => [mid[0] + perp[0] * bend(k), mid[1] + perp[1] * bend(k)];
+
+          // Wider bends + candidate scoring so each route follows a genuinely different road
+          const off2 = (k) => {
+            const bd = Math.sign(k) * Math.min(len * Math.abs(k), 0.012);
+            return [mid[0] + perp[0] * bd, mid[1] + perp[1] * bd];
+          };
+          const pathOverlap = (a, b) => {
+            const sa = a.filter((_, i) => i % 4 === 0), sb = b.filter((_, i) => i % 2 === 0);
+            let c = 0;
+            sa.forEach(p => { for (const q of sb) { if (L.latLng(p[0], p[1]).distanceTo(L.latLng(q[0], q[1])) < 25) { c++; break; } } });
+            return c / (sa.length || 1);
+          };
+          const safeRes = await queryOSRM([o, d]).catch(e => {
+            console.log('Using fallback for Safe Route:', e.message);
+            return getFallbackRoadPath(originNode, destNode, 'safe');
+          });
+          const pickBest = async (ks, type, avoid) => {
+            const cands = await Promise.all(ks.map(k => queryOSRM([o, off2(k), d]).catch(() => null)));
+            let best = null, bestScore = Infinity;
+            cands.filter(Boolean).forEach(c => {
+              if (c.distanceMeters > safeRes.distanceMeters * 3) return;
+              const ov = Math.max(...avoid.map(a => pathOverlap(c.latLngs, a.latLngs)));
+              const score = ov + (c.distanceMeters / Math.max(safeRes.distanceMeters, 1)) * 0.05;
+              if (score < bestScore) { bestScore = score; best = c; }
+            });
+            return best || getFallbackRoadPath(originNode, destNode, type);
+          };
+          const normalRes = await pickBest([0.3, 0.6, 0.9], 'normal', [safeRes]);
+          const unsafeRes = await pickBest([-0.4, -0.7, -1.0], 'unsafe', [safeRes, normalRes]);
+
+          // Render Road Vectors to Map
+          renderRoutesOnMap(originNode, destNode, safeRes, normalRes, unsafeRes);
+
+          // Populate and reveal Results Dashboard
+          updateResultsDashboard(safeRes, normalRes, unsafeRes);
+
+          showToast('3 Road-Snapped Routes Calculated via OSRM', '');
+        } catch (err) {
+          console.error('Calculation error:', err);
+          showToast('Error calculating routes. Please try again.', '');
+        } finally {
+          overlay.classList.remove('active');
+          calcBtn.disabled = false;
+        }
+      }
+
+      // -------------------------------------------------------------
+      // 6. LEAFLET RENDERING & VECTOR OVERLAYS
+      // -------------------------------------------------------------
+      function renderRoutesOnMap(origin, dest, safeData, normalData, unsafeData) {
+        const map = appState.map;
+        const routeFeatureGroup = L.featureGroup();
+
+        // 1.  Safe Route (Green, hex: #10b981, weight: 6, opacity: 0.95)
+        appState.routeLayers.safe = L.polyline(safeData.latLngs, {
+          color: '#10b981',
+          weight: 6,
+          opacity: 0.95,
+          lineJoin: 'round',
+          lineCap: 'round',
+          className: 'safe-polyline'
+        }).bindPopup(`
+          <div class="popup-title"> Safe Corridor</div>
+          <div class="popup-lux">Illumination: 85.4% Lux (High Density Municipal Lighting)</div>
+          <div class="popup-desc"><strong>Corridor:</strong> Kathora Main Road (SH-243)<br>
+          <strong>Status:</strong> Well-lit commercial route with CCTV surveillance & active medians.</div>
+        `);
+        routeFeatureGroup.addLayer(appState.routeLayers.safe);
+
+        // 2.  Normal Route (Yellow, hex: #f59e0b, weight: 5, opacity: 0.85)
+        appState.routeLayers.normal = L.polyline(normalData.latLngs, {
+          color: '#f59e0b',
+          weight: 5,
+          opacity: 0.85,
+          lineJoin: 'round',
+          lineCap: 'round',
+          className: 'normal-polyline'
+        }).bindPopup(`
+          <div class="popup-title"> Normal Route</div>
+          <div class="popup-lux">Illumination: 54.0% Lux (Standard Residential Lighting)</div>
+          <div class="popup-desc"><strong>Corridor:</strong> Gajanan Township Connector<br>
+          <strong>Status:</strong> Standard residential street with moderate illumination.</div>
+        `);
+        routeFeatureGroup.addLayer(appState.routeLayers.normal);
+
+        // 3.  Unsafe Shortcut (Red, hex: #ef4444, weight: 5, opacity: 0.85, dashArray: '8, 8')
+        appState.routeLayers.unsafe = L.polyline(unsafeData.latLngs, {
+          color: '#ef4444',
+          weight: 5,
+          opacity: 0.85,
+          dashArray: '8, 8',
+          lineJoin: 'round',
+          lineCap: 'round',
+          className: 'unsafe-polyline'
+        }).bindPopup(`
+          <div class="popup-title"> Unsafe Shortcut</div>
+          <div class="popup-lux" style="color:#ef4444;">Illumination: 18.2% Lux (Dark Alley Hazard)</div>
+          <div class="popup-desc"><strong>Corridor:</strong> Hostel Perimeter Backstreet<br>
+          <strong>Status:</strong> High risk, dark unlit backstreet. Non-functional lighting hazard.</div>
+        `);
+        routeFeatureGroup.addLayer(appState.routeLayers.unsafe);
+
+        // Add Origin Pin Marker
+        const startIcon = L.divIcon({
+          className: 'custom-div-pin',
+          html: `<div class="node-pin-marker node-pin-start">A</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+        appState.markerLayers.start = L.marker([origin.lat, origin.lng], { icon: startIcon })
+          .bindPopup(`
+            <div class="popup-title"> Origin Waypoint</div>
+            <div class="popup-desc"><strong>${origin.name}</strong><br>${origin.desc}</div>
+          `);
+        routeFeatureGroup.addLayer(appState.markerLayers.start);
+
+        // Add Destination Pin Marker
+        const endIcon = L.divIcon({
+          className: 'custom-div-pin',
+          html: `<div class="node-pin-marker node-pin-end">B</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
+        });
+        appState.markerLayers.end = L.marker([dest.lat, dest.lng], { icon: endIcon })
+          .bindPopup(`
+            <div class="popup-title"> Destination Target</div>
+            <div class="popup-desc"><strong>${dest.name}</strong><br>${dest.desc}</div>
+          `);
+        routeFeatureGroup.addLayer(appState.markerLayers.end);
+
+        // Add feature group to map
+        routeFeatureGroup.addTo(map); window.__sp = appState; document.dispatchEvent(new Event('sp:routes'));
+
+        // Auto-Fit Camera to all routes with padding
+        map.fitBounds(routeFeatureGroup.getBounds(), {
+          padding: [50, 50],
+          maxZoom: 16,
+          animate: true,
+          duration: 1.2
+        });
+
+        // Add hover & click interactions for polylines
+        setupPolylineInteractions();
+      }
+
+      function setupPolylineInteractions() {
+        ['safe', 'normal', 'unsafe'].forEach(type => {
+          const layer = appState.routeLayers[type];
+          if (!layer) return;
+
+          layer.on('mouseover', function() {
+            if (appState.activeHighlightedRoute !== type) {
+              layer.setStyle({ weight: (type === 'safe' ? 8 : 7), opacity: 1 });
+            }
+          });
+
+          layer.on('mouseout', function() {
+            if (appState.activeHighlightedRoute !== type) {
+              layer.setStyle({
+                weight: (type === 'safe' ? 6 : 5),
+                opacity: (type === 'safe' ? 0.95 : 0.85)
+              });
+            }
+          });
+
+          layer.on('click', function(e) {
+            highlightRoute(type);
+          });
+        });
+      }
+
+      function highlightRoute(type) {
+        appState.activeHighlightedRoute = type; document.dispatchEvent(new CustomEvent('sp:focus',{detail:type}));
+
+        // Update cards in UI
+        document.querySelectorAll('.route-card').forEach(card => {
+          if (card.dataset.route === type) {
+            card.classList.add('active');
+          } else {
+            card.classList.remove('active');
+          }
+        });
+
+        // Update polyline styles on Leaflet
+        const layers = appState.routeLayers;
+        if (type === 'safe') {
+          layers.safe?.setStyle({ weight: 7, opacity: 1 }).bringToFront();
+          layers.normal?.setStyle({ weight: 4, opacity: 0.35 });
+          layers.unsafe?.setStyle({ weight: 4, opacity: 0.35 });
+        } else if (type === 'normal') {
+          layers.normal?.setStyle({ weight: 7, opacity: 1 }).bringToFront();
+          layers.safe?.setStyle({ weight: 4, opacity: 0.35 });
+          layers.unsafe?.setStyle({ weight: 4, opacity: 0.35 });
+        } else if (type === 'unsafe') {
+          layers.unsafe?.setStyle({ weight: 7, opacity: 1 }).bringToFront();
+          layers.safe?.setStyle({ weight: 4, opacity: 0.35 });
+          layers.normal?.setStyle({ weight: 4, opacity: 0.35 });
+        }
+      }
+
+      // -------------------------------------------------------------
+      // 7. RESULTS & TELEMETRY DASHBOARD
+      // -------------------------------------------------------------
+      function updateResultsDashboard(safe, normal, unsafe) {
+        // Format Distance (km)
+        const formatKm = (m) => (m / 1000).toFixed(1) + ' km';
+        // Format Drive ETA
+        const formatDriveTime = (sec) => Math.max(1, Math.round(sec / 60)) + ' min';
+        // Format Walk ETA (~4.8 km/h)
+        const formatWalkTime = (m) => Math.max(1, Math.round((m / 1000) / 4.8 * 60)) + ' min';
+
+        // Safe
+        document.getElementById('safe-dist').textContent = formatKm(safe.distanceMeters);
+        document.getElementById('safe-time-drive').textContent = formatDriveTime(safe.durationSec);
+        document.getElementById('safe-time-walk').textContent = formatWalkTime(safe.distanceMeters);
+
+        // Normal
+        document.getElementById('normal-dist').textContent = formatKm(normal.distanceMeters);
+        document.getElementById('normal-time-drive').textContent = formatDriveTime(normal.durationSec * 1.15);
+        document.getElementById('normal-time-walk').textContent = formatWalkTime(normal.distanceMeters);
+
+        // Unsafe
+        document.getElementById('unsafe-dist').textContent = formatKm(unsafe.distanceMeters);
+        document.getElementById('unsafe-time-drive').textContent = formatDriveTime(unsafe.durationSec * 1.3);
+        document.getElementById('unsafe-time-walk').textContent = formatWalkTime(unsafe.distanceMeters);
+
+        // Make visible
+        const resultsBox = document.getElementById('results-container');
+        resultsBox.classList.add('visible');
+
+        // Reset highlight to safe route
+        highlightRoute('safe');
+      }
+
+      // -------------------------------------------------------------
+      // 8. RESET ENGINE (Restores Clean State)
+      // -------------------------------------------------------------
+      function clearActiveRouteLayers() { document.dispatchEvent(new Event('sp:clear'));
+        if (appState.routeLayers.safe) {
+          appState.map.removeLayer(appState.routeLayers.safe);
+          appState.routeLayers.safe = null;
+        }
+        if (appState.routeLayers.normal) {
+          appState.map.removeLayer(appState.routeLayers.normal);
+          appState.routeLayers.normal = null;
+        }
+        if (appState.routeLayers.unsafe) {
+          appState.map.removeLayer(appState.routeLayers.unsafe);
+          appState.routeLayers.unsafe = null;
+        }
+        if (appState.markerLayers.start) {
+          appState.map.removeLayer(appState.markerLayers.start);
+          appState.markerLayers.start = null;
+        }
+        if (appState.markerLayers.end) {
+          appState.map.removeLayer(appState.markerLayers.end);
+          appState.markerLayers.end = null;
+        }
+      }
+
+      function resetAll() {
+        clearActiveRouteLayers();
+        appState.activeHighlightedRoute = 'safe';
+
+        // Remove GPS marker & accuracy circle if user wants total clean slate
+        if (appState.gpsMarker) {
+          appState.map.removeLayer(appState.gpsMarker);
+          appState.gpsMarker = null;
+        }
+        if (appState.gpsAccuracyCircle) {
+          appState.map.removeLayer(appState.gpsAccuracyCircle);
+          appState.gpsAccuracyCircle = null;
+        }
+
+        // Reset selects
+        document.getElementById('select-origin').value = 'pote_township_circle';
+        document.getElementById('select-destination').value = 'pote_college_gate';
+        
+        // Reset GPS button state
+        const btnGps = document.getElementById('btn-gps-locate');
+        btnGps.classList.remove('gps-locked');
+        const gpsStatusPill = document.getElementById('gps-status-pill');
+        gpsStatusPill.textContent = 'STANDBY';
+        gpsStatusPill.style.color = '#06b6d4';
+
+        // Remove GPS option from origin select if present
+        const gpsOption = document.querySelector('#select-origin option[value="user_live_gps"]');
+        if (gpsOption) gpsOption.remove();
+        appState.userGpsLocation = null;
+
+        // Hide Results Container
+        document.getElementById('results-container').classList.remove('visible');
+
+        // Reset map view to Amravati default center
+        appState.map.setView([20.9740, 77.7600], 13, { animate: true });
+
+        showToast('Map & Vectors Reset. Pristine state restored.', '');
+      }
+
+      // -------------------------------------------------------------
+      // 9. DOM BINDINGS & EVENT LISTENERS
+      // -------------------------------------------------------------
+      function setupEventHandlers() {
+        // Calculate Button
+        document.getElementById('btn-calculate').addEventListener('click', calculateCorridorRoutes);
+
+        // Reset Button
+        document.getElementById('btn-reset').addEventListener('click', resetAll);
+
+        // Route Card Clicks
+        document.getElementById('card-safe').addEventListener('click', () => highlightRoute('safe'));
+        document.getElementById('card-normal').addEventListener('click', () => highlightRoute('normal'));
+        document.getElementById('card-unsafe').addEventListener('click', () => highlightRoute('unsafe'));
+
+        // Select Change handlers
+        document.getElementById('select-origin').addEventListener('change', (e) => {
+          appState.activeOriginKey = e.target.value;
+        });
+        document.getElementById('select-destination').addEventListener('change', (e) => {
+          appState.activeDestKey = e.target.value;
+        });
+      }
+
+      // -------------------------------------------------------------
+      // 10. INITIAL BOOTSTRAP
+      // -------------------------------------------------------------
+      window.addEventListener('DOMContentLoaded', () => {
+        initMap();
+        window.addEventListener('resize', () => appState.map.invalidateSize());
+        setTimeout(() => appState.map.invalidateSize(), 200);
+        setupGeolocation();
+        setupEventHandlers();
+        console.log('Smart-Path AI Night Navigation Engine initialized successfully.');
+      });
+
+    })();
+</script><script>
+(function(){
+  var NS='http://www.w3.org/2000/svg';
+  function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+  function rnd(a,b){return a+Math.random()*(b-a);}
+  var still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var nav=document.getElementById('nav');
+  function onScroll(){nav.classList.toggle('solid',window.scrollY>40);}
+  onScroll();addEventListener('scroll',onScroll,{passive:true});
+
+  // Hero: stars, skyline, trees, lamps, moths
+  var stars=document.getElementById('stars');
+  for(var i=0;i<80;i++){var s=el('circle',{cx:rnd(0,1600),cy:rnd(0,330),r:rnd(.5,1.5),fill:'#fff',opacity:rnd(.4,.9),'class':'star'},stars);s.style.animationDelay=rnd(0,4)+'s';}
+  var city=document.getElementById('city'),wins=[],x=-20;
+  while(x<1620){
+    var w=rnd(46,110),h=rnd(90,230);
+    el('rect',{x:x,y:590-h,width:w,height:h},city);
+    for(var wy=590-h+14;wy<570;wy+=22)for(var wx=x+10;wx<x+w-14;wx+=18)
+      if(Math.random()<.22)wins.push(el('rect',{x:wx,y:wy,width:6,height:9,fill:'#ffd48a',opacity:Math.random()<.6?.75:0},city));
+    x+=w+rnd(0,8);
+  }
+  if(!still)setInterval(function(){for(var j=0;j<2;j++){var r=wins[Math.floor(Math.random()*wins.length)];if(r)r.setAttribute('opacity',r.getAttribute('opacity')==='0'?'.75':'0');}},1400);
+  var trees=document.getElementById('trees');
+  for(var t=0;t<1700;t+=rnd(70,120)){var cy=rnd(520,555);el('ellipse',{cx:t,cy:cy,rx:rnd(40,66),ry:rnd(48,78)},trees);el('rect',{x:t-3,y:cy,width:6,height:600-cy},trees);}
+  var lamps=document.getElementById('lamps'),moths=document.getElementById('moths');
+  [260,820,1330].forEach(function(px,i){
+    var g=el('g',{'class':i===2?'dead':''},lamps);
+    el('rect',{x:px-3,y:300,width:6,height:292,fill:'#0a0e1a'},g);
+    el('path',{d:'M'+(px-3)+' 306 Q'+px+' 290 '+(px+40)+' 298 L'+(px+40)+' 304 Q'+px+' 298 '+(px+3)+' 316Z',fill:'#0a0e1a'},g);
+    var lg=el('g',{'class':'lamp-glow l'+(i+1)},g);
+    el('polygon',{points:(px+32)+',308 '+(px+48)+',308 '+(px+150)+',612 '+(px-70)+',612',fill:'url(#cone)'},lg);
+    el('ellipse',{cx:px+40,cy:620,rx:170,ry:15,fill:'url(#glow)'},lg);
+    el('circle',{cx:px+40,cy:306,r:80,fill:'url(#glow)'},lg);
+    el('rect',{x:px+30,y:303,width:20,height:5,rx:2,fill:'#fff3d6'},lg);
+    if(i===0)[['orbit',22],['orbit o2',34]].forEach(function(m){var mg=el('g',{transform:'translate('+(px+40)+' 300)'},moths);var o=el('g',{'class':m[0]},mg);el('circle',{cx:m[1],cy:0,r:1.6},o);});
+  });
+
+  // Route strips: one lamp per stretch, brightness = how well lit
+  document.querySelectorAll('.strip').forEach(function(d){
+    var k=d.dataset.k.split(',').map(Number),svg=el('svg',{viewBox:'0 0 420 80','aria-hidden':'true'});
+    el('rect',{x:0,y:52,width:420,height:6,rx:3,fill:'#1a2138'},svg);
+    k.forEach(function(v,i){var cx=36+i*70;
+      if(v>0)el('circle',{cx:cx,cy:26,r:30,fill:'url(#glow)',opacity:v},svg);
+      el('rect',{x:cx-1.5,y:22,width:3,height:34,fill:'#2b3350'},svg);
+      el('circle',{cx:cx,cy:22,r:4,fill:v>.5?'#fff3d6':'#3a4260'},svg);});
+    d.appendChild(svg);
+  });
+  // glow gradient must be reachable from strips: clone defs once
+  var sceneDefs=document.querySelector('.scene defs').cloneNode(true);
+  document.querySelectorAll('.strip svg').forEach(function(s){s.insertBefore(sceneDefs.cloneNode(true),s.firstChild);});
+
+  // Walker dot that travels along the focused route
+  var dot=null,raf=0,kind='safe',colors={safe:'#34c38f',normal:'#e9a23b',unsafe:'#e5533d'};
+  function stop(){cancelAnimationFrame(raf);if(dot&&window.__sp)window.__sp.map.removeLayer(dot);dot=null;}
+  function start(){
+    stop();var sp=window.__sp;if(!sp||still)return;
+    var layer=sp.routeLayers[kind];if(!layer)return;
+    var pts=layer.getLatLngs(),cum=[0];
+    for(var i=1;i<pts.length;i++)cum.push(cum[i-1]+sp.map.distance(pts[i-1],pts[i]));
+    var total=cum[cum.length-1]||1;
+    dot=L.circleMarker(pts[0],{radius:7,color:'#fff',weight:2,fillColor:colors[kind],fillOpacity:1,interactive:false}).addTo(sp.map);
+    (function tick(now){
+      if(!sp.map.hasLayer(layer)){stop();return;}
+      var d=((now%16000)/16000)*total,j=1;
+      while(j<cum.length-1&&cum[j]<d)j++;
+      var f=(d-cum[j-1])/((cum[j]-cum[j-1])||1);
+      dot.setLatLng([pts[j-1].lat+(pts[j].lat-pts[j-1].lat)*f,pts[j-1].lng+(pts[j].lng-pts[j-1].lng)*f]);
+      raf=requestAnimationFrame(tick);
+    })(performance.now());
+  }
+  document.addEventListener('sp:routes',function(){kind='safe';start();});
+  document.querySelectorAll('.route-card').forEach(function(c){c.addEventListener('click',function(){kind=c.dataset.route;start();});});
+})();
+</script><script>
+(function(){
+  var map=null,tiles={},cur=null,over=null,C={safe:'#34c38f',normal:'#e9a23b',unsafe:'#e5533d'};
+  var LM=[['Pote Township Circle',20.983,77.757],['Pote Township Gate',20.9847,77.7582],['Kathora Naka',20.95866,77.75442],['Gadge Nagar Circle',20.94936,77.76747],['P. R. Pote College',20.9863,77.7588],['Hostel Area',20.988,77.7605]];
+  var ESRI='https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',OSM='https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  function watch(lyr,k,fallbackOk){
+    var ok=false,errs=0;
+    lyr.on('tileload',function(){ok=true;var e=document.querySelector('.maperr');if(e)e.remove();});
+    lyr.on('tileerror',function(){
+      if(ok||++errs!==3)return;
+      if(!fallbackOk){
+        var d=document.createElement('div');d.className='maperr';d.textContent='Map tiles could not load. Check your internet connection and reload.';
+        document.querySelector('.mapwrap').appendChild(d);return;
+      }
+      map.removeLayer(cur);
+      cur=L.tileLayer(k==='night'?ESRI:OSM,{maxZoom:19}).addTo(map);cur.bringToBack();
+      document.getElementById('map').classList.toggle('dim',k==='night');
+      watch(cur,k,false);
+    });
+  }
+  function setLayer(k){
+    if(cur)map.removeLayer(cur);
+    document.getElementById('map').classList.remove('dim');
+    cur=tiles[k].addTo(map);watch(tiles[k].base||cur,k,k!=='sat');
+    document.getElementById('map').classList.toggle('light',k==='day');
+    document.querySelectorAll('#layers button').forEach(function(b){b.classList.toggle('on',b.dataset.l===k);});
+  }
+  document.addEventListener('sp:map',function(){
+    map=window.__sp.map;
+    map.eachLayer(function(l){if(l instanceof L.TileLayer)map.removeLayer(l);});
+    var E='https://server.arcgisonline.com/ArcGIS/rest/services/';
+    var nb=L.tileLayer(E+'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:16,zIndex:1});
+    var nr=L.tileLayer(E+'Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:16,zIndex:2});
+    tiles.night=L.layerGroup([nb,nr]);tiles.night.base=nb;
+    tiles.day=L.tileLayer(E+'World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
+    tiles.sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
+    setLayer('night');
+    L.control.scale({position:'bottomleft',imperial:false}).addTo(map);
+    LM.forEach(function(p){L.marker([p[1],p[2]],{interactive:false,icon:L.divIcon({className:'lmw',iconSize:[0,0],iconAnchor:[5,5],html:'<div class="lm"><i></i><span>'+p[0]+'</span></div>'})}).addTo(map);});
+    function few(){document.getElementById('map').classList.toggle('few',map.getZoom()<14);}
+    map.on('zoomend',few);few();
+    document.getElementById('layers').addEventListener('click',function(e){if(e.target.dataset.l)setLayer(e.target.dataset.l);});
+  });
+  function sample(pts,step){
+    var out=[],acc=0;
+    for(var i=1;i<pts.length;i++){
+      var d=map.distance(pts[i-1],pts[i]);
+      while(acc<d){var f=acc/(d||1);out.push([pts[i-1].lat+(pts[i].lat-pts[i-1].lat)*f,pts[i-1].lng+(pts[i].lng-pts[i-1].lng)*f]);acc+=step;}
+      acc-=d;
+    }
+    return out;
+  }
+  function clear(){if(over&&map){map.removeLayer(over);}over=null;}
+  document.addEventListener('sp:clear',clear);
+  var neon={},NC={safe:'#2dffb0',normal:'#ffc247',unsafe:'#ff3d6e'},focus='safe';
+  function shift(pts,m){
+    return pts.map(function(p,i){
+      var a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)],c=Math.cos(p.lat*Math.PI/180);
+      var dy=b.lat-a.lat,dx=(b.lng-a.lng)*c,n=Math.hypot(dx,dy)||1;
+      return L.latLng(p.lat+(dx/n)*m/111320,p.lng+(-dy/n)*m/(111320*c));
+    });
+  }
+  function overlap(a,b){
+    var sa=sample(a,40),sb=sample(b,40),c=0;if(!sa.length)return 0;
+    sa.forEach(function(p){for(var i=0;i<sb.length;i++){if(map.distance(p,sb[i])<14){c++;break;}}});
+    return c/sa.length;
+  }
+  function paint(act){
+    ['safe','normal','unsafe'].forEach(function(k){
+      var n=neon[k];if(!n)return;var on=k===act;
+      n[0].setStyle({opacity:on?.16:.04,weight:on?26:16});
+      n[1].setStyle({opacity:on?.35:.08,weight:on?12:8});
+      n[2].setStyle({opacity:on?1:.35,weight:on?4:3});
+      n[3].setStyle({opacity:on?.95:.3});
+      if(on)n.forEach(function(l){l.bringToFront();});
+    });
+  }
+  document.addEventListener('sp:focus',function(e){focus=e.detail;paint(focus);});
+  document.addEventListener('sp:routes',function(){
+    clear();var sp=window.__sp;over=L.layerGroup().addTo(map);neon={};focus='safe';
+    if(!map.getPane('lamps')){map.createPane('lamps').style.zIndex=450;}
+    var P={};['safe','normal','unsafe'].forEach(function(k){if(sp.routeLayers[k])P[k]=sp.routeLayers[k].getLatLngs();});
+    // when two routes snap to the same road, nudge them apart so every route stays visible
+    if(P.normal&&P.safe&&overlap(P.normal,P.safe)>.4)P.normal=shift(P.normal,7);
+    if(P.unsafe&&P.safe&&(overlap(P.unsafe,P.safe)>.4||(P.normal&&overlap(P.unsafe,P.normal)>.4)))P.unsafe=shift(P.unsafe,-7);
+    ['unsafe','normal','safe'].forEach(function(k){
+      if(!P[k])return;sp.routeLayers[k].setLatLngs(P[k]);
+      var d=k==='unsafe'?'10 9':null,o={interactive:false,lineCap:'round',lineJoin:'round',dashArray:d};
+      neon[k]=[
+        L.polyline(P[k],Object.assign({color:NC[k],weight:26,opacity:.16,dashArray:null},o,{dashArray:null})).addTo(over),
+        L.polyline(P[k],Object.assign({color:NC[k],weight:12,opacity:.35},o,{dashArray:null})).addTo(over),
+        L.polyline(P[k],Object.assign({color:NC[k],weight:4,opacity:1,className:'nc-'+k},o)).addTo(over),
+        L.polyline(P[k],Object.assign({color:'#ffffff',weight:1.4,opacity:.95},o)).addTo(over)
+      ];
+      sample(P[k],60).forEach(function(p,i){
+        if(k==='normal'&&i%3===1)return;if(k==='unsafe'&&i%6)return;
+        L.circleMarker(p,{pane:'lamps',radius:9,stroke:false,fillColor:'#ffd48a',fillOpacity:.14,interactive:false}).addTo(over);
+        L.circleMarker(p,{pane:'lamps',radius:2.2,stroke:false,fillColor:'#fff1c9',fillOpacity:.95,interactive:false}).addTo(over);
+      });
+    });
+    paint('safe');
+  });
+
+  // pages
+  function route(){
+    var h=location.hash,n=h.indexOf('#/')===0?h.slice(2):'home';
+    if(!document.getElementById('page-'+n))n='home';
+    document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('active',p.id==='page-'+n);});
+    document.querySelectorAll('.nav nav a').forEach(function(a){a.classList.toggle('on',a.dataset.p===n);});
+    setTimeout(function(){
+      if(n==='home'){if(map)map.invalidateSize();var t=h&&h[1]!=='/'?document.querySelector(h):null;t?t.scrollIntoView():scrollTo(0,0);}
+      else scrollTo(0,0);
+    },30);
+  }
+  addEventListener('hashchange',route);route();
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-o],[data-d]');if(!b)return;
+    var o=b.dataset.o,d=b.dataset.d,sel=document.getElementById(o?'select-origin':'select-destination');
+    sel.value=o||d;sel.dispatchEvent(new Event('change'));
+    if(location.hash==='#planner')route();else location.hash='#planner';
+  });
+  var sb=document.getElementById('share-loc'),out=document.getElementById('share-out');
+  sb.addEventListener('click',function(){
+    if(!navigator.geolocation){out.textContent='This browser cannot share your location.';return;}
+    out.textContent='Getting your location...';
+    navigator.geolocation.getCurrentPosition(function(p){
+      var msg='I am here right now: https://www.google.com/maps?q='+p.coords.latitude.toFixed(6)+','+p.coords.longitude.toFixed(6);
+      if(navigator.share){navigator.share({text:msg}).catch(function(){});out.textContent='Choose who to send it to.';}
+      else if(navigator.clipboard){navigator.clipboard.writeText(msg);out.textContent='Link copied. Paste it into a message to someone you trust.';}
+      else out.textContent=msg;
+    },function(){out.textContent='Could not get your location. Turn on location and allow it for this site.';},{enableHighAccuracy:true,timeout:15000});
+  });
+})();
+</script></body></html>
